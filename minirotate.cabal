@@ -1,0 +1,26 @@
+name:                minirotate
+version:             0.1.0.0
+synopsis:            Minimalistic file rotation utility
+description:         Minimalistic file rotation utility
+category:            Development
+license:             BSD3
+license-file:        LICENSE
+author:              Krzysztof Skrzetnicki <krzysztof.skrzetnicki+hackage@gmail.com>
+maintainer:          Krzysztof Skrzetnicki <krzysztof.skrzetnicki+hackage@gmail.com>
+build-type:          Simple
+Cabal-Version: >= 1.6
+
+source-repository    head
+    Type:     Git
+    Location: http://github.com/Tener/haskell-minirotate.git
+
+source-repository    this
+    Type:     Git
+    Location: http://github.com/Tener/haskell-minirotate.git
+    Tag: 0.1.0.0
+
+
+executable           minirotate
+      main-is:       src/Main.hs
+      build-depends: filepath >= 1.1.0 && < 1.2.0,
+                     base >= 4 && < 5
