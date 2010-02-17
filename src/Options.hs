@@ -73,7 +73,7 @@ options = [ Option ['h','?'] ["help"] (NoArg ((first .> continue ^= False) .
           ]
 
 usage = usageInfo header options where
-    header = "Usage: minirotate [OPTIONS] LOCATION [LOCATION...] DESTINATION"
+    header = "Usage: minirotate [OPTIONS] SOURCE [SOURCE..] DESTINATION"
                                      
 
 parseOptions :: [String] -> Either ErrorString ([FilePath],Options)
