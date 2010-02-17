@@ -52,7 +52,19 @@ runRotate _ locs | length locs < 2 = logErr "Need at least one source location a
       oneLocation xxx = print xxx
       oneLocation (File,fp) = return ()
       oneLocation (Dir,fp) = return ()
-  -- for each location decide if it's file or directory. copy file to destination
+
+  -- check for correct destination
+  dest <- fileOrDir locTo
+  case dest of
+    Left err -> logErr ("Problem with destination:" ++ err) >> exitFailure
+    Right (File,fp) -> logErr ("Destination should be directory, not file: " ++ (show fp))  >> exitFailure
+    _ -> return () -- all ok.
+
+  -- for each location decide if it's file or directory. 
+  -- then copy file to destination or report error.
   mapM fileOrDir locFrom >>= mapM_ (either logErr oneLocation)
+
   -- rotate files in final directory
   -- rotateFiles locTo
+
+
