@@ -2,6 +2,6 @@ module Main where
 
 import System.Directory
 
-getModificationTime
+import Options
 
 main = return ()
