@@ -12,8 +12,11 @@ data CopyMode = Move | Copy
                 deriving (Read,Show,Eq,Ord)
 
 data RunOptions = RunOptions { 
-      filePattern_ :: String       -- ^ output file pattern
-    , copyMode_    :: CopyMode     -- ^ should we move or copy files?
+      filePattern_  :: String       -- ^ output file pattern
+    , copyMode_     :: CopyMode     -- ^ should we move or copy files?
+    , minimumFiles_ :: Int          -- ^ minimum # of files
+    , maximumFiles_ :: Int          -- ^ maximum # of files
+    , maximumAge_   :: Int          -- ^ oldest age allowed (in seconds)
     } deriving (Read,Show,Eq,Ord)
 
                          
@@ -33,8 +36,12 @@ class Default a where
 
 instance Default RunOptions where
     def = RunOptions {
-            filePattern_ = "{basename}-{date %Y-%m-%d}.{ext}"
-          , copyMode_    = Copy
+            filePattern_  = "{basename}-{date %Y-%m-%d}.{ext}"
+          , copyMode_     = Copy
+          , minimumFiles_ = 3
+          , maximumFiles_ = 20
+            -- set maximum age to 3 months
+          , maximumAge_   = 3600 {- hour -} * 24 {- day -} * 30 {- month -} * 3 
           }
 
 instance Default EnvOptions where
