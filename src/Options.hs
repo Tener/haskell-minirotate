@@ -38,7 +38,7 @@ class Default a where
 
 instance Default RunOptions where
     def = RunOptions {
-            filePattern_  = "{basename}-{date %Y-%m-%d}.{ext}"
+            filePattern_  = "{basename}-{modtime %d-%m-%Y-%H_%M_%S}{ext}" -- ext includes leading '.'
           , copyMode_     = Copy
           , minimumFiles_ = 3
           , maximumFiles_ = 20
