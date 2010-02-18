@@ -25,15 +25,14 @@ data PatternEnv = PatternEnv { file_     :: FilePath
                              , modtime_  :: ClockTime
                              }
 
-
-
 $( deriveAccessors ''PatternEnv )
 
-makeEnv mt fp = PatternEnv { file_     = takeFileName fp
-                           , basename_ = takeBaseName fp
-                           , ext_      = takeExtension fp
-                           , modtime_  = mt
-                           }
+makeEnv num numtime mt fp =
+    PatternEnv { file_     = takeFileName fp
+               , basename_ = takeBaseName fp
+               , ext_      = takeExtension fp
+               , modtime_  = mt
+               }
 
 -- | compile file pattern and produce function that maps clock time and file name into resulting file name
 compilePattern :: String -> Either ErrString (ClockTime -> String -> String)
