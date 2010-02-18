@@ -1,5 +1,5 @@
 name:                minirotate
-version:             0.1.1.1
+version:             0.1.1.2
 synopsis:            Minimalistic file rotation utility
 description:
          minirotate is minimalistic file rotation utility designed for calling from cron or similar tool.
@@ -8,7 +8,7 @@ license:             BSD3
 license-file:        LICENSE
 author:              Krzysztof Skrzetnicki <krzysztof.skrzetnicki+hackage@gmail.com>
 maintainer:          Krzysztof Skrzetnicki <krzysztof.skrzetnicki+hackage@gmail.com>
-homepage:            http://tener.github.com/haskell-minirotate
+homepage:            http://github.com/Tener/haskell-minirotate
 stability:           Beta
 build-type:          Simple
 cabal-version: >= 1.6
