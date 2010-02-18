@@ -8,6 +8,8 @@ import Data.Accessor.Tuple
 import Data.Accessor.Template
 import Text.Printf
 
+import Safe ( readDef )
+
 data CopyMode = Move | Copy
                 deriving (Read,Show,Eq,Ord)
 
@@ -41,7 +43,7 @@ instance Default RunOptions where
           , minimumFiles_ = 3
           , maximumFiles_ = 20
             -- set maximum age to 3 months
-          , maximumAge_   = 3600 {- hour -} * 24 {- day -} * 30 {- month -} * 3 
+          , maximumAge_   = 3600 {- hour -} * 24 {- day -} * 30 {- month -} * 3
           }
 
 instance Default EnvOptions where
@@ -60,6 +62,10 @@ type ErrorString = String
 $( deriveAccessors ''RunOptions )
 $( deriveAccessors ''EnvOptions )
 
+-- | strict function composition
+f .! g = \x -> f $! g x
+readErr errmsg str = readDef (error (printf "%s (input: %s)" errmsg str)) str
+
 options :: [OptDescr (Options -> Options)]
 options = [ Option ['h','?'] ["help"] (NoArg ((first .> continue ^= False) . 
                                               (first .> showHelp ^= True)))
@@ -76,7 +82,19 @@ options = [ Option ['h','?'] ["help"] (NoArg ((first .> continue ^= False) .
                    "set copy mode to 'move'"
           , Option ['c'] ["copy"] (NoArg (second .> copyMode ^= Copy))
                    "set copy mode to 'copy'"
---          TODO: logger, verbose          
+          , Option [] ["min-files"] (ReqArg ((second .> minimumFiles ^=) .! 
+                                             (readErr "--min-files: bad format"))
+                                             "NUM")
+                   "minimum number of files to keep"
+          , Option [] ["max-files"] (ReqArg ((second .> maximumFiles ^=) .! 
+                                             (readErr "--max-files: bad format"))
+                                             "NUM")
+                   "maximum number of files to keep"
+          , Option [] ["max-age"] (ReqArg ((second .> maximumAge ^=) .! 
+                                           (readErr "--max-age: bad format"))
+                                           "NUMSEC")
+                   "maximum age of files to keep"
+--          TODO: logger, verbose
           ]
 
 usage = usageInfo header options where
