@@ -1,1 +1,36 @@
-See miniorotate.cabal for details.
+$ minirotate --help
+
+Usage: minirotate [OPTIONS] SOURCE [SOURCE..] DESTINATION
+  -h, -?      --help             show help
+  -V          --version          show version
+              --show-defaults    show program defaults
+  -p PATTERN  --pattern=PATTERN  pattern for final files
+  -m          --move             set copy mode to 'move'
+  -c          --copy             set copy mode to 'copy'
+              --min-files=NUM    minimum number of files to keep
+              --max-files=NUM    maximum number of files to keep
+              --max-age=NUMSEC   maximum age of files to keep
+
+$ minirotate --show-defaults
+Defaults:
+	EnvOptions {showHelp_ = False, showVers_ = False, showDefs_ = False, continue_ = True, logger_ = "", verbose_ = False}
+	RunOptions {filePattern_ = "{basename}-{modtime %d-%m-%Y-%H_%M_%S}{ext}", copyMode_ = Copy, minimumFiles_ = 3, maximumFiles_ = 20, maximumAge_ = 7776000}
+
+Supported file patterns:
+{file}     = takeFileName fp
+{basename} = takeBaseName fp
+{ext}      = takeExtension fp -- this includes leading dot '.'
+{modtime time-format}
+
+
+TODO:
+
+-- logging
+-- verbose mode
+-- write docs
+-- write examples
+
+
+
+See miniorotate.cabal for some more details.
+
