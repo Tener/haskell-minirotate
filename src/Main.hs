@@ -85,7 +85,7 @@ runRotate opts locs | length locs < 2 = logErr "Need at least one source locatio
 
   -- for each location decide if it's file or directory.
   -- then copy file to destination or report error.
-  mapM fileOrDir locFrom >>= mapM_ (either logErr (oneLocation False))
+  (sort <$> mapM fileOrDir locFrom) >>= mapM_ (either logErr (oneLocation 1 False))
 
   -- rotate files in final directory
   rotateFiles opts locTo
