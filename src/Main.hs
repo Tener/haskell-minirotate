@@ -46,11 +46,14 @@ main = do
 
 
 
-copyOp :: CopyMode -> (FilePath -> FilePath -> IO ())
--- copyOp Copy = \from to -> logErr (printf "COPY: %s -> %s" from to)
--- copyOp Move = \from to -> logErr (printf "MOVE: %s -> %s" from to)
-copyOp Copy = copyFile
-copyOp Move = renameFile
+copyOpDry :: Bool -> CopyMode -> (FilePath -> FilePath -> IO ())
+copyOpDry True Copy = \from to -> logErr (printf "COPY: %s -> %s" from to)
+copyOpDry True Move = \from to -> logErr (printf "MOVE: %s -> %s" from to)
+copyOpDry False Copy = copyFile
+copyOpDry False Move = renameFile
+
+removeFileDry True fn = logErr (printf "REMOVE: %s" fn)
+removeFileDry False fn = removeFile fn
 
 runRotate :: RunOptions -> [FilePath] -> IO ()
 runRotate opts locs | length locs < 2 = logErr "Need at least one source location and destination\n" >> exitFailure
@@ -68,7 +71,7 @@ runRotate opts locs | length locs < 2 = logErr "Need at least one source locatio
       -- | oneLocation firstLevel? (element type, element name)
       oneLocation _ (File,fp) = do
         modTime <- getModificationTime fp
-        (copyOp (get copyMode $ opts)) fp (locTo </> (runPattern modTime fp))
+        (copyOpDry (get dryRun $ opts) (get copyMode $ opts)) fp (locTo </> (runPattern modTime fp))
       oneLocation True (Dir,fp) = do
         logErr (printf "Directory %s is a subdirectory at source site. Recursive operation is not supported. Skipping."
                         (show fp))
@@ -85,7 +88,7 @@ runRotate opts locs | length locs < 2 = logErr "Need at least one source locatio
 
   -- for each location decide if it's file or directory.
   -- then copy file to destination or report error.
-  (sort <$> mapM fileOrDir locFrom) >>= mapM_ (either logErr (oneLocation 1 False))
+  (sort <$> mapM fileOrDir locFrom) >>= mapM_ (either logErr (oneLocation False))
 
   -- rotate files in final directory
   rotateFiles opts locTo
@@ -138,7 +141,7 @@ rotateFiles opts loc = do
   print (getKeptFiles partitionedFiles)
 -}
 
-  mapM_ removeFile (getDeletedFiles partitionedFiles)
+  mapM_ (removeFileDry (get dryRun $ opts)) (getDeletedFiles partitionedFiles)
 
   return ()
 

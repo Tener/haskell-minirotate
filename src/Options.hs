@@ -19,6 +19,7 @@ data RunOptions = RunOptions {
     , minimumFiles_ :: Int          -- ^ minimum # of files
     , maximumFiles_ :: Int          -- ^ maximum # of files
     , maximumAge_   :: Int          -- ^ oldest age allowed (in seconds)
+    , dryRun_       :: Bool         -- ^ should we really commit our operations?
     } deriving (Read,Show,Eq,Ord)
 
                          
@@ -44,6 +45,7 @@ instance Default RunOptions where
           , maximumFiles_ = 20
             -- set maximum age to 3 months
           , maximumAge_   = 3600 {- hour -} * 24 {- day -} * 30 {- month -} * 3
+          , dryRun_       = False
           }
 
 instance Default EnvOptions where
@@ -94,6 +96,8 @@ options = [ Option ['h','?'] ["help"] (NoArg ((first .> continue ^= False) .
                                            (readErr "--max-age: bad format"))
                                            "NUMSEC")
                    "maximum age of files to keep"
+          , Option [] ["dry-run"] (NoArg (second .> dryRun ^= True))
+                   "don't remove or copy any files"
 --          TODO: logger, verbose
           ]
 
