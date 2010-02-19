@@ -29,7 +29,7 @@ import Pattern
 data FileOrDir = File | Dir deriving (Show,Ord,Eq)
 
 -- | auxilary function. to be replaced by proper logging.
-logErr str = hPutStrLn stderr ("ERR: " ++ str)
+logErr str = hPutStrLn stderr str
 
 main :: IO ()
 main = do
