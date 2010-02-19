@@ -27,7 +27,7 @@ data PatternEnv = PatternEnv { file_     :: FilePath
 
 $( deriveAccessors ''PatternEnv )
 
-makeEnv num numtime mt fp =
+makeEnv mt fp =
     PatternEnv { file_     = takeFileName fp
                , basename_ = takeBaseName fp
                , ext_      = takeExtension fp
@@ -70,12 +70,3 @@ getFunction "modtime" format = Right (\ env -> let mt = (get modtime) $ env
                                                  formatCalendarTime defaultTimeLocale format ct)
 
 getFunction xx yy = Left (printf "Unknown function: '%s', args: %s" xx (show yy))
-
-
-
-{-
-functions = ["file"
-            ,"basename"
-            ,"ext"
-            ,"modtime"]
--}
