@@ -1,0 +1,292 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+  <title>minirotate(1) minimalistic utility for file rotation</title>
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+  <meta name="generator" content="pandoc" />
+  <meta name="author" content="Krzysztof Skrzętnicki" />
+  <meta name="date" content="19/02/2010" />
+</head>
+<body>
+<h1 class="title">minirotate(1) minimalistic utility for file rotation</h1>
+<div id="TOC"
+><ul
+  ><li
+    ><a href="#philosophy"
+      ><span class="toc-section-number"
+	>1</span
+	> Philosophy</a
+      ><ul
+      ><li
+	><a href="#design"
+	  ><span class="toc-section-number"
+	    >1.1</span
+	    > Design</a
+	  ></li
+	><li
+	><a href="#applications"
+	  ><span class="toc-section-number"
+	    >1.2</span
+	    > Applications</a
+	  ></li
+	><li
+	><a href="#examples"
+	  ><span class="toc-section-number"
+	    >1.3</span
+	    > Examples</a
+	  ><ul
+	  ><li
+	    ><a href="#backup-directory-homefoo-to-mntbackupfoo"
+	      ><span class="toc-section-number"
+		>1.3.1</span
+		> Backup directory /home/foo to /mnt/backup/foo</a
+	      ></li
+	    ><li
+	    ><a href="#move-log-files-from-varlogbar-to-varlogbarold-and-rotate-final-destination"
+	      ><span class="toc-section-number"
+		>1.3.2</span
+		> Move log files from /var/log/bar to /var/log/bar/old and rotate final destination</a
+	      ></li
+	    ><li
+	    ><a href="#just-rotate-files-dont-copy-or-move-any-other-files."
+	      ><span class="toc-section-number"
+		>1.3.3</span
+		> Just rotate files, don’t copy or move any other files.</a
+	      ></li
+	    ></ul
+	  ></li
+	><li
+	><a href="#differences-vs.logrotate"
+	  ><span class="toc-section-number"
+	    >1.4</span
+	    > Differences vs. logrotate</a
+	  ></li
+	></ul
+      ></li
+    ><li
+    ><a href="#documentation"
+      ><span class="toc-section-number"
+	>2</span
+	> Documentation</a
+      ><ul
+      ><li
+	><a href="#command-line-options"
+	  ><span class="toc-section-number"
+	    >2.1</span
+	    > Command line options</a
+	  ></li
+	><li
+	><a href="#syntax-for-file-patterns"
+	  ><span class="toc-section-number"
+	    >2.2</span
+	    > Syntax for file patterns</a
+	  ></li
+	><li
+	><a href="#pattern-functions-overview"
+	  ><span class="toc-section-number"
+	    >2.3</span
+	    > Pattern functions overview</a
+	  ></li
+	></ul
+      ></li
+    ></ul
+  ></div
+>
+<div id="philosophy"
+><h1
+  ><a href="#TOC"
+    ><span class="header-section-number"
+      >1</span
+      > Philosophy</a
+    ></h1
+  ><div id="design"
+  ><h2
+    ><a href="#TOC"
+      ><span class="header-section-number"
+	>1.1</span
+	> Design</a
+      ></h2
+    ><p
+    ><code
+      >minirotate</code
+      > has been designed to be as simple as possible, while being useful. - it should be tool that works with other tools to achieve final result - all configuration should be in done on command line - runnable from cron by multiple users at once - no state kept between invocations - solid construction, no loose ends, hence static typing - reasonably fast, but don’t optimize anything prematurely</p
+    ></div
+  ><div id="applications"
+  ><h2
+    ><a href="#TOC"
+      ><span class="header-section-number"
+	>1.2</span
+	> Applications</a
+      ></h2
+    ><p
+    >Most common application of file rotation is log rotation. This isn’t the only one though. <code
+      >minirotate</code
+      > was written for backup files in the first place.</p
+    ></div
+  ><div id="examples"
+  ><h2
+    ><a href="#TOC"
+      ><span class="header-section-number"
+	>1.3</span
+	> Examples</a
+      ></h2
+    ><div id="backup-directory-homefoo-to-mntbackupfoo"
+    ><h3
+      ><a href="#TOC"
+	><span class="header-section-number"
+	  >1.3.1</span
+	  > Backup directory /home/foo to /mnt/backup/foo</a
+	></h3
+      ><pre
+      ><code
+	> We first use tar to create temporary tarball.
+ `$ tar -cjf /tmp/foo.tar.bz2 /home/foo`
+ Then we use `minirotate` to move our logs to final place:
+ `$ minirotate /tmp/foo.tar.bz2 /mnt/backup/foo`
+ foo.tar.bz2 is renamed according to default file pattern.
+ We can also specify our own pattern like this:
+ `$ minirotate -p '{basename}-{modtime %d-%m-%Y-%H_%M_%S}{ext}' /tmp/foo.tar.bz2 /mnt/backup/foo`
+
+ The format pattern and functions (denoted by curly braces {}) are explained below.
+</code
+	></pre
+      ></div
+    ><div id="move-log-files-from-varlogbar-to-varlogbarold-and-rotate-final-destination"
+    ><h3
+      ><a href="#TOC"
+	><span class="header-section-number"
+	  >1.3.2</span
+	  > Move log files from /var/log/bar to /var/log/bar/old and rotate final destination</a
+	></h3
+      ><pre
+      ><code
+	> We will rotate files in place:
+ `minirotate --move -p '{filename}.{modtime %d-%m-%Y}' /var/log/bar/ /var/log/bar/old`
+ Note that we --move files instead of default --copy action.
+</code
+	></pre
+      ></div
+    ><div id="just-rotate-files-dont-copy-or-move-any-other-files."
+    ><h3
+      ><a href="#TOC"
+	><span class="header-section-number"
+	  >1.3.3</span
+	  > Just rotate files, don’t copy or move any other files.</a
+	></h3
+      ><pre
+      ><code
+	> `minirotate '' /var/log/bar --max-files=10`
+
+ This works because '' is regarded as special, empty input that is simply skipped.
+
+ If unsure how certain operation will work use --dry-run switch. It won't operate but instead print operations that would be made. Note that this isn't entirely true: if we move some files in the first stage, we will usually affect the rotate stage. It's still useful to see how program understands our input.
+</code
+	></pre
+      ></div
+    ></div
+  ><div id="differences-vs.logrotate"
+  ><h2
+    ><a href="#TOC"
+      ><span class="header-section-number"
+	>1.4</span
+	> Differences vs. logrotate</a
+      ></h2
+    ><p
+    >From manpage: <code
+      >logrotate - rotates, compresses, and mails system logs</code
+      ></p
+    ><p
+    ><code
+      >minirotate</code
+      > won’t: - send mail to anyone - compress anything - use any extra configuration - schedule itself - have 60+ configuration options</p
+    ><p
+    >In general, if you want to do something more complex you will usually write a script for it. It’s fine. That’s their purpose: glueing several tools together.</p
+    ></div
+  ></div
+><div id="documentation"
+><h1
+  ><a href="#TOC"
+    ><span class="header-section-number"
+      >2</span
+      > Documentation</a
+    ></h1
+  ><div id="command-line-options"
+  ><h2
+    ><a href="#TOC"
+      ><span class="header-section-number"
+	>2.1</span
+	> Command line options</a
+      ></h2
+    ><p
+    ><code
+      >minirotate --help</code
+      > will print brief explenation of command line switches:</p
+    ><pre
+    ><code
+      >Usage: minirotate [OPTIONS] SOURCE [SOURCE..] DESTINATION
+  -h, -?      --help             show help
+  -V          --version          show version
+              --show-defaults    show program defaults
+  -p PATTERN  --pattern=PATTERN  pattern for final files
+  -m          --move             set copy mode to 'move'
+  -c          --copy             set copy mode to 'copy'
+              --min-files=NUM    minimum number of files to keep
+              --max-files=NUM    maximum number of files to keep
+              --max-age=NUMSEC   maximum age of files to keep
+              --dry-run          don't remove or copy any files
+</code
+      ></pre
+    ><p
+    >Most are pretty straitforward. Files will be taken from multiple sources and put into destination. Aditionally we can use ’’ (empty string) to denote null input source.</p
+    ><p
+    >When rotating files the rules are applied in order: - Delete too old files (by mod time) - Delete exceeding files (by filename) - Undelete to keep minimum count of files (by filename)</p
+    ></div
+  ><div id="syntax-for-file-patterns"
+  ><h2
+    ><a href="#TOC"
+      ><span class="header-section-number"
+	>2.2</span
+	> Syntax for file patterns</a
+      ></h2
+    ><p
+    >Pattern syntax is simple: everything that is not enclosed by ‘{}’ is kept verbatim. Inside ‘{}’ we can place calls to functions, which are called for each file individually.</p
+    ><p
+    >We don’t allow nested ‘{}’. If one does do this, the result is undefined - and we don’t have to report error in this case. Sorry.</p
+    ><p
+    >If the function takes arguments (for now only “modtime” does so) there can be arbitraly number of spaces between the function name and arguments. After the first non-space argument the rest of spaces are included verbatim, so the resulting filename can have spaces.</p
+    ></div
+  ><div id="pattern-functions-overview"
+  ><h2
+    ><a href="#TOC"
+      ><span class="header-section-number"
+	>2.3</span
+	> Pattern functions overview</a
+      ></h2
+    ><p
+    >So far there are only 4 of them:</p
+    ><ul
+    ><li
+      ><code
+	>file</code
+	> : full filename, and that excludes directories in filepath (examples: iexplore.exe, music.mp3, acpi.log, backup.tar.bz2)</li
+      ><li
+      ><code
+	>ext</code
+	> : take file extension including leading dot (examples: .exe, .mp3, .log, .bz2)</li
+      ><li
+      ><code
+	>basename</code
+	> : same as file but drop extension (examples: iexplore, music, acpi, backup.tar)</li
+      ><li
+      ><code
+	>modtime tfmt</code
+	> : formats file modification time according to format string <code
+	>tfmt</code
+	></li
+      ></ul
+    ></div
+  ></div
+>
+</body>
+</html>
+

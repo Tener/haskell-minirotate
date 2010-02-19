@@ -1,0 +1,106 @@
+% minirotate(1) minimalistic utility for file rotation
+% Krzysztof Skrzętnicki
+% 19/02/2010
+
+# Philosophy
+## Design
+
+   `minirotate` has been designed to be as simple as possible, while being useful.
+    - it should be tool that works with other tools to achieve final result
+    - all configuration should be in done on command line
+    - runnable from cron by multiple users at once
+    - no state kept between invocations
+    - solid construction, no loose ends, hence static typing
+    - reasonably fast, but don't optimize anything prematurely
+
+## Applications
+
+   Most common application of file rotation is log rotation. This isn't the only one though.
+   `minirotate` was written for backup files in the first place.
+   
+## Examples
+
+### Backup directory /home/foo to /mnt/backup/foo
+     
+     We first use tar to create temporary tarball.
+     `$ tar -cjf /tmp/foo.tar.bz2 /home/foo`
+     Then we use `minirotate` to move our logs to final place:
+     `$ minirotate /tmp/foo.tar.bz2 /mnt/backup/foo`
+     foo.tar.bz2 is renamed according to default file pattern.
+     We can also specify our own pattern like this:
+     `$ minirotate -p '{basename}-{modtime %d-%m-%Y-%H_%M_%S}{ext}' /tmp/foo.tar.bz2 /mnt/backup/foo`
+     
+     The format pattern and functions (denoted by curly braces {}) are explained below.
+
+### Move log files from /var/log/bar to /var/log/bar/old and rotate final destination
+
+     We will rotate files in place:
+     `minirotate --move -p '{filename}.{modtime %d-%m-%Y}' /var/log/bar/ /var/log/bar/old`
+     Note that we --move files instead of default --copy action.
+
+### Just rotate files, don't copy or move any other files.
+
+     `minirotate '' /var/log/bar --max-files=10`
+     
+     This works because '' is regarded as special, empty input that is simply skipped.
+
+     If unsure how certain operation will work use --dry-run switch. It won't operate but instead print operations that would be made. Note that this isn't entirely true: if we move some files in the first stage, we will usually affect the rotate stage. It's still useful to see how program understands our input.
+
+## Differences vs. logrotate
+
+   From manpage: 
+   `logrotate - rotates, compresses, and mails system logs`
+
+   `minirotate` won't:
+    - send mail to anyone
+    - compress anything
+    - use any extra configuration
+    - schedule itself
+    - have 60+ configuration options
+
+   In general, if you want to do something more complex you will usually write a script for it. It's fine. That's their purpose: glueing several tools together. 
+
+# Documentation
+## Command line options
+
+ `minirotate --help` will print brief explenation of command line switches:
+
+~~~
+Usage: minirotate [OPTIONS] SOURCE [SOURCE..] DESTINATION
+  -h, -?      --help             show help
+  -V          --version          show version
+              --show-defaults    show program defaults
+  -p PATTERN  --pattern=PATTERN  pattern for final files
+  -m          --move             set copy mode to 'move'
+  -c          --copy             set copy mode to 'copy'
+              --min-files=NUM    minimum number of files to keep
+              --max-files=NUM    maximum number of files to keep
+              --max-age=NUMSEC   maximum age of files to keep
+              --dry-run          don't remove or copy any files
+~~~
+
+ Most are pretty straitforward. Files will be taken from multiple sources and put into destination.
+ Aditionally we can use '' (empty string) to denote null input source.
+
+ When rotating files the rules are applied in order:
+  - Delete too old files (by mod time)
+  - Delete exceeding files (by filename)
+  - Undelete to keep minimum count of files (by filename)
+
+## Syntax for file patterns
+
+ Pattern syntax is simple: everything that is not enclosed by '{}' is kept verbatim. Inside '{}' we can place calls to functions, which are called for each file individually. 
+
+ We don't allow nested '{}'. If one does do this, the result is undefined - and we don't have to report error in this case. Sorry. 
+
+ If the function takes arguments (for now only "modtime" does so) there can be arbitraly number of spaces between the function name and arguments. After the first non-space argument the rest of spaces are included verbatim, so the resulting filename can have spaces.
+
+## Pattern functions overview
+ 
+ So far there are only 4 of them:
+
+ - `file` : full filename, and that excludes directories in filepath (examples: iexplore.exe, music.mp3, acpi.log, backup.tar.bz2)
+ - `ext` : take file extension including leading dot (examples: .exe, .mp3, .log, .bz2)
+ - `basename` : same as file but drop extension (examples: iexplore, music, acpi, backup.tar)
+ - `modtime tfmt` : formats file modification time according to format string `tfmt`
+
