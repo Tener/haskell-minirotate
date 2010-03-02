@@ -32,4 +32,5 @@ executable            minirotate
                       old-locale,
                       safe == 0.2,
                       split == 0.1.2,
-                      mtl >= 1.1.0
+                      mtl >= 1.1.0,
+                      process > 1

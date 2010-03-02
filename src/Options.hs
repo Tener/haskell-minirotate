@@ -20,6 +20,8 @@ data RunOptions = RunOptions {
     , maximumFiles_ :: Int          -- ^ maximum # of files
     , maximumAge_   :: Int          -- ^ oldest age allowed (in seconds)
     , dryRun_       :: Bool         -- ^ should we really commit our operations?
+    , externalMove_ :: Bool         -- ^ use 'mv' command instead of renameFile
+    , externalCopy_ :: Bool         -- ^ use 'cp' command instead of copyFile
     } deriving (Read,Show,Eq,Ord)
 
                          
@@ -46,6 +48,8 @@ instance Default RunOptions where
             -- set maximum age to 3 months
           , maximumAge_   = 3600 {- hour -} * 24 {- day -} * 30 {- month -} * 3
           , dryRun_       = False
+          , externalMove_ = False
+          , externalCopy_ = False
           }
 
 instance Default EnvOptions where
@@ -98,6 +102,10 @@ options = [ Option ['h','?'] ["help"] (NoArg ((first .> continue ^= False) .
                    "maximum age of files to keep"
           , Option [] ["dry-run"] (NoArg (second .> dryRun ^= True))
                    "don't remove or copy any files"
+          , Option [] ["external-move"] (NoArg (second .> externalMove ^= True))
+                   "use external move impelmentation ('mv' command) instead of System.Directory.renameFile"
+          , Option [] ["external-copy"] (NoArg (second .> externalCopy ^= True))
+                   "use external move impelmentation ('cp' command) instead of System.Directory.copyFile"
 --          TODO: logger, verbose
           ]
 

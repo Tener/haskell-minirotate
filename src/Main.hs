@@ -6,6 +6,7 @@ import System.Directory
 import System.Environment
 import System.IO ( hPutStrLn, stderr )
 import System.Exit ( exitFailure )
+import System.Process ( runProcess, waitForProcess )
 
 import Data.Accessor
 import Data.Accessor.Tuple
@@ -47,11 +48,13 @@ main = do
 
 
 
-copyOpDry :: Bool -> CopyMode -> (FilePath -> FilePath -> IO ())
-copyOpDry True Copy = \from to -> logErr (printf "COPY: %s -> %s" from to)
-copyOpDry True Move = \from to -> logErr (printf "MOVE: %s -> %s" from to)
-copyOpDry False Copy = copyFile
-copyOpDry False Move = renameFile
+copyOpDry :: (Bool,Bool,Bool) -> CopyMode -> (FilePath -> FilePath -> IO ())
+copyOpDry (True,_,_) Copy = \from to -> logErr (printf "COPY: %s -> %s" from to)
+copyOpDry (True,_,_) Move = \from to -> logErr (printf "MOVE: %s -> %s" from to)
+copyOpDry (False,False,_) Copy = copyFile
+copyOpDry (False,True,_) Copy = \from to -> (runProcess "cp" [from,to] Nothing Nothing Nothing Nothing Nothing >>= waitForProcess >> return ())
+copyOpDry (False,_,False) Move = renameFile
+copyOpDry (False,_,True) Move = \from to -> (runProcess "mv" [from,to] Nothing Nothing Nothing Nothing Nothing >>= waitForProcess >> return ())
 
 removeFileDry True fn = logErr (printf "REMOVE: %s" fn)
 removeFileDry False fn = removeFile fn
@@ -72,7 +75,11 @@ runRotate opts locs | length locs < 2 = logErr "Need at least one source locatio
       -- | oneLocation firstLevel? (element type, element name)
       oneLocation _ (File,fp) = do
         modTime <- getModificationTime fp
-        (copyOpDry (get dryRun $ opts) (get copyMode $ opts)) fp (locTo </> (runPattern modTime fp))
+        let copyOpts = ((get dryRun $ opts)
+                       ,(get externalCopy $ opts)
+                       ,(get externalMove $ opts))
+
+        (copyOpDry copyOpts (get copyMode $ opts)) fp (locTo </> (runPattern modTime fp))
       oneLocation True (Dir,fp) = do
         logErr (printf "Directory %s is a subdirectory at source site. Recursive operation is not supported. Skipping."
                         (show fp))
