@@ -19,6 +19,7 @@ import Control.Applicative ( (<$>) )
 import Text.Printf
 
 import Paths_minirotate ( version )
+import Data.Version ( showVersion )
 
 import Debug.Trace
 
@@ -38,7 +39,7 @@ main = do
     Left errmsg -> logErr errmsg >> exitFailure
     Right (locs,(envO,runO)) -> do
          when (get showHelp $ envO) (logErr usage)
-         when (get showVers $ envO) (logErr $ printf "minirotate version %s" (show version))
+         when (get showVers $ envO) (logErr $ printf "minirotate version %s" (showVersion version))
          when (get showDefs $ envO) (logErr $ printf "Defaults:\n\t%s\n\t%s\n"
                                              (show (def :: EnvOptions))
                                              (show (def :: RunOptions)))

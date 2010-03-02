@@ -1,5 +1,5 @@
 name:                minirotate
-version:             0.1.2.0
+version:             0.1.2.1
 synopsis:            Minimalistic file rotation utility
 description:
          minirotate is minimalistic file rotation utility designed for calling from cron or similar tool.
